@@ -63,7 +63,6 @@ export default async function handler(req, res) {
         const igdbBody = `
             search "${query}";
             fields name, cover.url, first_release_date, summary, genres.name, involved_companies.company.name, involved_companies.developer, platforms.name, platforms.abbreviation, total_rating, category;
-            where category = (0, 8, 9); 
             limit 20;
         `;
 
