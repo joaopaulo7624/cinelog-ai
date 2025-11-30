@@ -15,7 +15,19 @@ export default async function handler(req, res) {
         return;
     }
 
-    const { query } = req.body;
+    let { query } = req.body || {};
+
+    // Fallback: Se o body vier como string (acontece as vezes na Vercel), tenta parsear
+    if (typeof req.body === 'string') {
+        try {
+            const parsed = JSON.parse(req.body);
+            query = parsed.query;
+        } catch (e) {
+            console.error("Erro ao parsear body:", e);
+        }
+    }
+
+    console.log("Recebido query:", query); // Log para debug na Vercel
 
     if (!query) {
         return res.status(400).json({ error: 'Query is required' });
