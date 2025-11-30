@@ -6,8 +6,11 @@ const BACKEND_URL = '/api/igdb';
 export const searchIgdb = async (query: string): Promise<IgdbSearchResult[]> => {
     console.log("Searching IGDB via Backend:", query);
 
+    const url = BACKEND_URL;
+    console.log(`Fetching from: ${url} with query: ${query}`);
+
     try {
-        const response = await fetch(BACKEND_URL, {
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -17,8 +20,8 @@ export const searchIgdb = async (query: string): Promise<IgdbSearchResult[]> => 
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error(`Backend Error ${response.status}: ${errorText}`);
-            throw new Error(`Backend Error: ${response.statusText}`);
+            console.error(`Backend Error [${response.status}]: ${response.statusText} - ${errorText}`);
+            throw new Error(`Backend Error: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
