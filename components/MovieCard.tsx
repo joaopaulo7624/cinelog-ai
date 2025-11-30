@@ -60,7 +60,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ entry, onDelete, onClick }) => {
         {/* Action Button */}
         <button className="w-full py-2 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 flex items-center justify-center gap-2 transition-colors group-hover:bg-white group-hover:text-black">
           <Play size={12} fill="currentColor" />
-          <span className="text-xs font-bold uppercase tracking-wide">Assistir</span>
+          <span className="text-xs font-bold uppercase tracking-wide">Assistido</span>
         </button>
       </div>
     </div>
