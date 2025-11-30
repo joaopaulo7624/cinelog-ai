@@ -15,19 +15,26 @@ export default async function handler(req, res) {
         return;
     }
 
-    let { query } = req.body || {};
+    // Tenta pegar query de JSON, String ou Query Params (URL)
+    let query = '';
 
-    // Fallback: Se o body vier como string (acontece as vezes na Vercel), tenta parsear
-    if (typeof req.body === 'string') {
-        try {
-            const parsed = JSON.parse(req.body);
-            query = parsed.query;
-        } catch (e) {
-            console.error("Erro ao parsear body:", e);
+    if (req.query && req.query.query) {
+        query = req.query.query;
+    } else if (req.body) {
+        if (typeof req.body === 'object' && req.body.query) {
+            query = req.body.query;
+        } else if (typeof req.body === 'string') {
+            try {
+                const parsed = JSON.parse(req.body);
+                query = parsed.query;
+            } catch (e) {
+                // Se não for JSON, assume que o body inteiro é a query
+                query = req.body;
+            }
         }
     }
 
-    console.log("Recebido query:", query); // Log para debug na Vercel
+    console.log("Recebido query final:", query);
 
     if (!query) {
         return res.status(400).json({ error: 'Query is required' });
@@ -36,12 +43,8 @@ export default async function handler(req, res) {
     const CLIENT_ID = process.env.VITE_IGDB_CLIENT_ID;
     const CLIENT_SECRET = process.env.VITE_IGDB_CLIENT_SECRET;
 
-    // Tenta usar token do env ou gera um novo (simplificado para serverless)
-    // Em serverless, o cache de memória não persiste por muito tempo, 
-    // então idealmente passamos o token ou geramos um rápido.
     let token = process.env.VITE_IGDB_ACCESS_TOKEN;
 
-    // Se não tiver token fixo, gera um (fluxo Client Credentials)
     if (!token && CLIENT_SECRET) {
         try {
             const tokenRes = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&grant_type=client_credentials`, {
@@ -56,12 +59,12 @@ export default async function handler(req, res) {
     }
 
     try {
+        // Query simplificada para teste
         const igdbBody = `
-      search "${query}";
-      fields name, cover.url, first_release_date, summary, genres.name, involved_companies.company.name, involved_companies.developer, platforms.name, platforms.abbreviation, total_rating, category;
-      where category = (0, 8, 9); 
-      limit 20;
-    `;
+            search "${query}";
+            fields name, cover.url, first_release_date, total_rating, platforms.abbreviation, platforms.name;
+            limit 20;
+        `;
 
         const response = await fetch('https://api.igdb.com/v4/games', {
             method: 'POST',
