@@ -92,6 +92,18 @@ export default async function handler(req, res) {
             };
         });
 
+        if (processedGames.length === 0) {
+            console.log("DEBUG: IGDB retornou lista vazia para query:", query);
+            // Retorna um item de debug para aparecer no frontend
+            return res.status(200).json([{
+                id: 999999,
+                name: `DEBUG: Buscou por '${query}'`,
+                summary: `O backend recebeu '${query}'. Se isso estiver correto, o IGDB não tem esse jogo. Se estiver 'undefined', há um erro de parsing.`,
+                genres: [{ name: "Debug" }],
+                processed_image_url: "https://placehold.co/400x600?text=Debug"
+            }]);
+        }
+
         res.status(200).json(processedGames);
 
     } catch (error) {
