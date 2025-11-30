@@ -1,0 +1,89 @@
+import fetch from 'node-fetch';
+
+export default async function handler(req, res) {
+    // Configuração de CORS para permitir que seu frontend acesse
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader(
+        'Access-Control-Allow-Headers',
+        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    );
+
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
+    }
+
+    const { query } = req.body;
+
+    if (!query) {
+        return res.status(400).json({ error: 'Query is required' });
+    }
+
+    const CLIENT_ID = process.env.VITE_IGDB_CLIENT_ID;
+    const CLIENT_SECRET = process.env.VITE_IGDB_CLIENT_SECRET;
+
+    // Tenta usar token do env ou gera um novo (simplificado para serverless)
+    // Em serverless, o cache de memória não persiste por muito tempo, 
+    // então idealmente passamos o token ou geramos um rápido.
+    let token = process.env.VITE_IGDB_ACCESS_TOKEN;
+
+    // Se não tiver token fixo, gera um (fluxo Client Credentials)
+    if (!token && CLIENT_SECRET) {
+        try {
+            const tokenRes = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&grant_type=client_credentials`, {
+                method: 'POST'
+            });
+            const tokenData = await tokenRes.json();
+            token = tokenData.access_token;
+        } catch (e) {
+            console.error("Erro ao gerar token:", e);
+            return res.status(500).json({ error: 'Failed to generate token' });
+        }
+    }
+
+    try {
+        const igdbBody = `
+      search "${query}";
+      fields name, cover.url, first_release_date, summary, genres.name, involved_companies.company.name, involved_companies.developer, platforms.name, platforms.abbreviation, total_rating, category;
+      where category = (0, 8, 9); 
+      limit 20;
+    `;
+
+        const response = await fetch('https://api.igdb.com/v4/games', {
+            method: 'POST',
+            headers: {
+                'Client-ID': CLIENT_ID,
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'text/plain',
+            },
+            body: igdbBody,
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`IGDB Error: ${errorText}`);
+        }
+
+        const games = await response.json();
+
+        // Processar imagens
+        const processedGames = games.map(game => {
+            let imageUrl = '';
+            if (game.cover && game.cover.url) {
+                imageUrl = `https:${game.cover.url.replace('t_thumb', 't_cover_big')}`;
+            }
+            return {
+                ...game,
+                processed_image_url: imageUrl
+            };
+        });
+
+        res.status(200).json(processedGames);
+
+    } catch (error) {
+        console.error("API Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+}
