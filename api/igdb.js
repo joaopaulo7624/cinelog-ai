@@ -59,10 +59,11 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Query simplificada para teste
+        // Query completa restaurada
         const igdbBody = `
             search "${query}";
-            fields name, cover.url, first_release_date, total_rating, platforms.abbreviation, platforms.name;
+            fields name, cover.url, first_release_date, summary, genres.name, involved_companies.company.name, involved_companies.developer, platforms.name, platforms.abbreviation, total_rating, category;
+            where category = (0, 8, 9); 
             limit 20;
         `;
 
@@ -94,18 +95,6 @@ export default async function handler(req, res) {
                 processed_image_url: imageUrl
             };
         });
-
-        if (processedGames.length === 0) {
-            console.log("DEBUG: IGDB retornou lista vazia para query:", query);
-            // Retorna um item de debug para aparecer no frontend
-            return res.status(200).json([{
-                id: 999999,
-                name: `DEBUG: Buscou por '${query}'`,
-                summary: `O backend recebeu '${query}'. Se isso estiver correto, o IGDB não tem esse jogo. Se estiver 'undefined', há um erro de parsing.`,
-                genres: [{ name: "Debug" }],
-                processed_image_url: "https://placehold.co/400x600?text=Debug"
-            }]);
-        }
 
         res.status(200).json(processedGames);
 
