@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, Film, LayoutGrid, BarChart2, Search, Settings, User, Gamepad2 } from 'lucide-react';
+import { Plus, Film, LayoutGrid, BarChart2, Search, Settings, User, Gamepad2, Play } from 'lucide-react';
 import { WatchEntry, AIAnalysis, MediaType } from './types';
 import { analyzeProfile } from './services/geminiService';
 import { databaseService } from './services/databaseService';
@@ -166,30 +166,32 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-[#0a0a0a] text-slate-100 pb-24">
 
       {/* Navbar */}
-      <header className="sticky top-0 z-40 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-white/5 px-6 py-4">
-        <div className="max-w-[1600px] mx-auto flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setAppMode(prev => prev === 'cine' ? 'game' : 'cine')}>
-            <div className={`transition-colors duration-300 ${appMode === 'cine' ? 'text-red-600 bg-red-500/10' : 'text-purple-500 bg-purple-500/10'} p-2 rounded-lg`}>
-              {appMode === 'cine' ? <Film size={24} /> : <Gamepad2 size={24} />}
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-wide text-white flex items-center gap-1 select-none">
-                {appMode === 'cine' ? 'CINE' : 'GAME'}
-                <span className={`transition-colors duration-300 ${appMode === 'cine' ? 'text-red-600' : 'text-purple-500'}`}>LOG</span>
-              </h1>
-              <p className="text-[10px] text-gray-500 font-medium tracking-wider uppercase group-hover:text-gray-300 transition-colors">
-                Trocar para {appMode === 'cine' ? 'Jogos' : 'Filmes'}
-              </p>
-            </div>
+      <header className="sticky top-0 z-40 bg-[#0a0a0a]/90 backdrop-blur-md px-6 py-4">
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between">
+
+          {/* Logo & Mode Switch */}
+          <div className="flex items-center gap-6">
+            <h1 className="text-2xl font-black tracking-tighter text-white flex items-center select-none">
+              <span className="text-red-500">CINE</span>
+              <span className="text-white">LOG</span>
+            </h1>
+
+            <button
+              onClick={() => setAppMode(prev => prev === 'cine' ? 'game' : 'cine')}
+              className="px-4 py-1.5 rounded-full bg-[#1f1f1f] border border-white/5 text-[10px] font-bold text-red-500 uppercase tracking-wider hover:bg-[#2a2a2a] transition-colors"
+            >
+              {appMode === 'cine' ? 'Trocar para Jogos' : 'Trocar para Filmes'}
+            </button>
           </div>
 
-          <div className="flex flex-1 items-center justify-end gap-4">
-            <div className="hidden md:flex bg-[#1f1f1f] rounded-xl px-4 py-2.5 items-center border border-transparent focus-within:border-white/10 transition-all w-full max-w-md">
-              <Search size={18} className="text-gray-500 mr-3" />
+          {/* Search & Profile */}
+          <div className="flex items-center gap-4">
+            <div className="hidden md:flex bg-[#1f1f1f] rounded-full px-4 py-2 items-center border border-transparent focus-within:border-white/10 transition-all w-64">
+              <Search size={16} className="text-gray-500 mr-2" />
               <input
                 type="text"
                 placeholder="Buscar na sua lista..."
-                className="bg-transparent border-none outline-none text-sm w-full placeholder-gray-500 text-gray-200"
+                className="bg-transparent border-none outline-none text-xs w-full placeholder-gray-500 text-gray-200"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -197,24 +199,51 @@ const App: React.FC = () => {
 
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="p-2.5 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl border border-white/5 transition-all"
+              className="w-8 h-8 rounded-full bg-gray-700 overflow-hidden border border-white/10"
             >
-              <User size={20} />
+              {/* Avatar Placeholder */}
+              <img src="https://i.pravatar.cc/150?img=11" alt="User" className="w-full h-full object-cover" />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-[1600px] mx-auto px-6 py-8">
+      <main className="max-w-[1600px] mx-auto px-6 pb-12">
+
+        {/* Hero Section (Dune Reference) */}
+        {viewMode === 'list' && !searchTerm && (
+          <div className="relative w-full h-[400px] rounded-3xl overflow-hidden mb-10 group cursor-pointer shadow-2xl">
+            <img
+              src="https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s5hj0PX.jpg"
+              alt="Dune Part Two"
+              className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
+
+            <div className="absolute bottom-0 left-0 p-10 flex flex-col gap-4 max-w-2xl">
+              <h2 className="text-5xl font-bold text-white leading-tight drop-shadow-lg">
+                Dune: Part Two
+              </h2>
+              <div className="flex items-center gap-4">
+                <button className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/10 rounded-lg text-white font-bold text-sm flex items-center gap-2 hover:bg-white/20 transition-colors">
+                  <Play size={16} fill="currentColor" /> Assistido
+                </button>
+                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
+                  <Play size={20} className="text-white ml-1" fill="currentColor" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Filters & Actions Bar */}
-        <div className="flex flex-col xl:flex-row gap-6 items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row gap-6 items-center justify-between mb-8">
 
-          {/* Filter Tabs */}
-          <div className="flex p-1.5 bg-[#1f1f1f] rounded-2xl border border-white/5 overflow-x-auto max-w-full">
+          {/* Filter Tabs (Text Only like reference) */}
+          <div className="flex items-center gap-6">
             <button
               onClick={() => { setViewMode('list'); setFilterType('ALL'); }}
-              className={`px-6 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${viewMode === 'list' && filterType === 'ALL' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-white'}`}
+              className={`text-sm font-bold transition-colors ${viewMode === 'list' && filterType === 'ALL' ? 'text-white bg-[#1f1f1f] px-4 py-2 rounded-lg' : 'text-gray-500 hover:text-gray-300'}`}
             >
               Todos
             </button>
@@ -222,13 +251,13 @@ const App: React.FC = () => {
               <>
                 <button
                   onClick={() => { setViewMode('list'); setFilterType(MediaType.MOVIE); }}
-                  className={`px-6 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${viewMode === 'list' && filterType === MediaType.MOVIE ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                  className={`text-sm font-bold transition-colors ${viewMode === 'list' && filterType === MediaType.MOVIE ? 'text-white bg-[#1f1f1f] px-4 py-2 rounded-lg' : 'text-gray-500 hover:text-gray-300'}`}
                 >
                   Filmes
                 </button>
                 <button
                   onClick={() => { setViewMode('list'); setFilterType(MediaType.SERIES); }}
-                  className={`px-6 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${viewMode === 'list' && filterType === MediaType.SERIES ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                  className={`text-sm font-bold transition-colors ${viewMode === 'list' && filterType === MediaType.SERIES ? 'text-white bg-[#1f1f1f] px-4 py-2 rounded-lg' : 'text-gray-500 hover:text-gray-300'}`}
                 >
                   Séries
                 </button>
@@ -236,26 +265,26 @@ const App: React.FC = () => {
             ) : (
               <button
                 onClick={() => { setViewMode('list'); setFilterType(MediaType.GAME); }}
-                className={`px-6 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${viewMode === 'list' && filterType === MediaType.GAME ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                className={`text-sm font-bold transition-colors ${viewMode === 'list' && filterType === MediaType.GAME ? 'text-white bg-[#1f1f1f] px-4 py-2 rounded-lg' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 Jogos
               </button>
             )}
             <button
               onClick={() => setViewMode('stats')}
-              className={`px-6 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap ${viewMode === 'stats' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-white'}`}
+              className={`text-sm font-bold transition-colors ${viewMode === 'stats' ? 'text-white bg-[#1f1f1f] px-4 py-2 rounded-lg' : 'text-gray-500 hover:text-gray-300'}`}
             >
-              <BarChart2 size={16} /> Estatísticas
+              Estatísticas
             </button>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-center">
+          <div className="flex items-center">
             <button
               onClick={() => setIsModalOpen(true)}
-              className={`w-full sm:w-auto bg-gradient-to-r ${appMode === 'cine' ? 'from-[#ff004c] to-[#ff0080] hover:from-[#ff004c] hover:to-[#ff0060] shadow-red-900/20' : 'from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-purple-900/20'} text-white px-8 py-3 rounded-2xl font-semibold shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-95`}
+              className={`bg-[#ff4b6e] hover:bg-[#ff3355] text-white px-6 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-red-900/20 flex items-center gap-2 transition-transform active:scale-95`}
             >
-              <Plus size={20} strokeWidth={2.5} />
-              Adicionar {appMode === 'cine' ? 'Título' : 'Jogo'}
+              <Plus size={16} strokeWidth={3} />
+              Adicionar Título
             </button>
           </div>
         </div>
@@ -264,7 +293,7 @@ const App: React.FC = () => {
         {viewMode === 'list' ? (
           <>
             {filteredEntries.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 animate-fade-in">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 animate-fade-in">
                 {filteredEntries.map(entry => (
                   <MovieCard
                     key={entry.id}
@@ -276,6 +305,7 @@ const App: React.FC = () => {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-gray-100 border border-white/10 rounded-3xl bg-white/5 shadow-2xl shadow-black/40 gap-4 px-6 text-center">
+                {/* Empty State Logic... */}
                 <div className="p-4 rounded-full bg-white/10">
                   {appMode === 'cine' ? <Film size={56} className="text-primary-300" /> : <Gamepad2 size={56} className="text-purple-300" />}
                 </div>
